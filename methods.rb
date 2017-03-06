@@ -1,4 +1,3 @@
-require_relative './classes.rb'
 require 'csv'
 require 'tty-prompt'
 require 'colorize'
@@ -32,12 +31,8 @@ def first_opt
 
   case selector
     when "Start quiz"
-      # puts "Start quiz"
+
       show_categories
-      # Until input_check breaks, do check_includes
-      input_check do |input|
-        check_includes(input)
-      end
       quiz(@category_input_push)
 
     when "Add a new Q&A"
@@ -88,24 +83,6 @@ def another_qa_opt
     when "Go back"
       first_opt
   end
-end
-
-# Checks if the category exists
-def check_includes(category_input_get)
-  # .map checks through the current array to see if it contains the argument
-  # It creates an array that when is does contain the argument it will put
-  # true, other wise false. it then checks if the new array has a true
-   if @categories.map {|a| a.include?(category_input_get) }.include?(true)
-     # Run next method
-     @category_input_push = category_input_get
-     puts @category_input_push
-     return true
-     #@x = true
-   else
-    puts "Sorry, we do not have that category. Please pick another"
-    print "> "
-    return false
-   end
 end
 
 ### Start Quiz ###
@@ -166,8 +143,6 @@ def make_new_category
   CSV.open('categories.csv', 'a+') do |csv_file|
     csv_file << [category_name]
   end
-  @categories << [category_name]
-  @categories_table = Terminal::Table.new :title => "Categories", :rows => @categories
 
   category = category_name
   link = "#{category}.csv"
@@ -207,7 +182,14 @@ end
 
 # Puts category table
 def show_categories
-    puts "Please pick a category from the list below:"
-    puts @categories_table
-    print "> "
+      prompt = TTY::Prompt.new
+
+      choices = []
+
+      CSV.foreach('categories.csv', headers: true) do |row|
+        choices.push(row['category'])
+      end
+
+      category = prompt.select("Please pick a category from the list below:", choices)
+        @category_input_push = category
 end
