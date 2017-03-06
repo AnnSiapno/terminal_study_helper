@@ -1,6 +1,7 @@
 require 'csv'
 require 'tty-prompt'
 require 'colorize'
+require 'terminal-table'
 
 
 ##### DEFINE THE METHODS #####
@@ -23,13 +24,19 @@ end
 def first_opt
   prompt = TTY::Prompt.new
 
+  puts "\n"
+
   selector = prompt.select("What would you like to do?") do |menu|
+    menu.choice "Study"
     menu.choice "Start quiz"
     menu.choice "Add a new Q&A"
     menu.choice "Exit"
   end
 
   case selector
+    when "Study"
+      show_categories
+      study(@category_input_push)
     when "Start quiz"
 
       show_categories
@@ -40,6 +47,25 @@ def first_opt
     when "Exit"
       exit
   end
+end
+
+# Study
+
+def study(category)
+
+  link = "#{category}.csv"
+
+  @study = []
+
+  CSV.foreach(link, headers: true) do |row|
+    @study << [row['question'], row['answer']]
+  end
+
+  @study_table = Terminal::Table.new :title => category, :headings => ['Questions', 'Answers'], :rows => @study
+  @study_table.style = {:padding_left => 3, :border_x => "=", :border_i => "x"}
+
+  puts "\n\n#{@study_table}\n\n"
+  first_opt
 end
 
 # New Q&A option
@@ -190,6 +216,8 @@ def show_categories
         choices.push(row['category'])
       end
 
+      puts "\n"
+       
       category = prompt.select("Please pick a category from the list below:", choices)
         @category_input_push = category
 end
