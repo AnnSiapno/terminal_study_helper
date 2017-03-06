@@ -1,11 +1,10 @@
 require_relative './classes.rb'
 require 'csv'
 require 'tty-prompt'
+require 'colorize'
 
 
 ##### DEFINE THE METHODS #####
-
-prompt = TTY::Prompt.new
 
 ### Input checks ###
 
@@ -23,71 +22,73 @@ def input_check
 end
 
 def first_opt
-  sleep(0.5)
-  puts "What would you like to do?"
-  puts "1. Start quiz"
-  puts "2. Add a new Q&A"
-  # puts "3. Exit"
-  print "> "
-  input_check do |option_input|
-    start_input(option_input)
+  prompt = TTY::Prompt.new
+
+  selector = prompt.select("What would you like to do?") do |menu|
+    menu.choice "Start quiz"
+    menu.choice "Add a new Q&A"
+    menu.choice "Exit"
+  end
+
+  case selector
+    when "Start quiz"
+      # puts "Start quiz"
+      show_categories
+      # Until input_check breaks, do check_includes
+      input_check do |input|
+        check_includes(input)
+      end
+      quiz(@category_input_push)
+
+    when "Add a new Q&A"
+      another_qa_opt
+    when "Exit"
+      exit
   end
 end
 
-# Start
-def start_input(option_input)
-  option_input = option_input.to_i
-  if option_input == 1
-    show_categories
-    # Until input_check breaks, do check_includes
-    input_check do |input|
-    check_includes(input)
-    end
-    quiz(@category_input_push)
-    return true
-  elsif option_input == 2
-    puts "Would you like to:"
-    puts "1. Create a new category"
-    puts "2. Add to an existing category"
-    print "> "
-    option_input = input_check do |option_input|
-      new_check_category(option_input)
-    end
-    return true
-  else
-    puts "Sorry, invalid input"
-    puts "What would you like to do?"
-    puts "1. Start quiz"
-    puts "2. Add a new Q&A"
-    # puts "3. Exit"
-    print "> "
-    return false
+# New Q&A option
+
+def new_qa_opt
+  prompt = TTY::Prompt.new
+
+  selector = prompt.select("Would you like to input another?") do |menu|
+    menu.choice "Yes"
+    menu.choice "No"
+  end
+
+  case selector
+    when "Yes"
+      new_qa(category_input_push)
+    when "No"
+      first_opt
   end
 end
 
-# New Q&A --> add a current category or create new?
-def new_check_category(option_input)
-  option_input = option_input.to_i
-  if option_input == 1
-     make_new_category
-    return true
-  elsif option_input == 2
-    show_categories
-    input_check do |input|
-      check_includes(input)
-    end
-    new_qa(@category_input_push)
-    return true
-  else
-    puts "Sorry, invalid input"
-      puts "Would you like to:"
-      puts "1. Create a new category"
-      puts "2. Add to an existing category"
-      print "> "
-    return false
+# Another QA option
+
+def another_qa_opt
+  prompt = TTY::Prompt.new
+
+  selector = prompt.select("What would you like to do?") do |menu|
+    menu.choice "Create a new category"
+    menu.choice "Add to an existing category"
+    menu.choice "Go back"
+  end
+
+  case selector
+    when "Create a new category"
+      make_new_category
+    when "Add to an existing category"
+      show_categories
+      input_check do |input|
+        check_includes(input)
+      end
+      new_qa(@category_input_push)
+    when "Go back"
+      first_opt
   end
 end
-
 
 # Checks if the category exists
 def check_includes(category_input_get)
@@ -147,10 +148,10 @@ def check_answer(answer_input, link, counter)
   answers = CSV.read(link, headers:true)
 
   if answers[counter][1] == answer_input
-      puts "That was correct!"
+      puts "That was correct!".green
       @score += 1
     else
-      puts "Sorry, that was incorrect the answer is: #{answers[counter][1]}"
+      puts "Sorry, that was incorrect the answer is: #{answers[counter][1]}".red
     end
 end
 
@@ -198,17 +199,7 @@ def new_qa(category_input_push)
   # add a row to the csv file
   csv_file << [question, answer]
   end
-
-  puts "Would you like to input another? (y/n)"
-  print "> "
-  option_input = $stdin.gets.chomp
-  if option_input == "y"
-    new_qa(category_input_push)
-  elsif option_input == "n"
-    exit
-  else
-    exit
-  end
+  new_qa_opt
 end
 
 
@@ -216,7 +207,6 @@ end
 
 # Puts category table
 def show_categories
-    sleep(0.5)
     puts "Please pick a category from the list below:"
     puts @categories_table
     print "> "

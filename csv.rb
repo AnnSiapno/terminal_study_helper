@@ -20,11 +20,11 @@ end
 
 CSV.open('css.csv', 'wb') do |csv|
   csv << ["question", "answer"]
-  csv << ["What does HTML stand for?", "Hyper Text Markup Language"]
-  csv << ["Which HTML element defines the title of a document?", "<title>"]
-  csv << ["Which HTML element is used to specify a footer for a document or section?", "<footer>"]
-  csv << ["Which HTML element defines navigation links?", "<nav>"]
-  csv << ["Which HTML element is used to specify a header for a document or section?", "<header>"]
+  csv << ["What does CSS stand for?", "Cascading Style Sheets"]
+  csv << ["Which property is used to change the background color?", "background-color"]
+  csv << ["How do you add a white background color for all <h1> elements?", "h1 {background-color:#FFFFFF;}"]
+  csv << ["Which CSS property is used to change the text color of an element?", "color"]
+  csv << ["Which CSS property controls the text size?", "font-size"]
 end
 
 CSV.open('terminal.csv', 'wb') do |csv|
