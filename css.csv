@@ -1,0 +1,6 @@
+question,answer
+What does HTML stand for?,Hyper Text Markup Language
+Which HTML element defines the title of a document?,<title>
+Which HTML element is used to specify a footer for a document or section?,<footer>
+Which HTML element defines navigation links?,<nav>
+Which HTML element is used to specify a header for a document or section?,<header>

@@ -1,0 +1,6 @@
+question,answer
+Print out 'Hello World' on a new line,puts 'Hello World'
+Create a variable with the name of 'number' and a value of 6,number = 6
+What is the comparative operator for 'equals to'?',==
+What is the comparative operator for 'not equal to'?',!=
+What is the command to convert a string into all lowercase?,.downcase

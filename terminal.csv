@@ -1,0 +1,6 @@
+question,answer
+List the files and folders in the current directory,ls
+Create a new directory called 'new',mkdir new
+Create a new text file called 'my_file',touch my_file.txt
+Delete the file called 'my_file.txt',rm my_file.txt
+Open the current directory,open .
