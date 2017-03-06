@@ -8,19 +8,6 @@ require 'terminal-table'
 
 ### Input checks ###
 
-# Check if user input is valid
-def input_check
-  loop do
-    input = $stdin.gets.chomp
-    correctInput = yield input
-    # If we have a valid item
-    if correctInput
-      # Stop looping
-      return true
-    end
-  end
-end
-
 def first_opt
   prompt = TTY::Prompt.new
 
@@ -133,28 +120,47 @@ def ask(chosen_category)
 
   category = chosen_category
   link = "#{category}.csv"
+  score_link = "#{category}-score.csv"
+
+  CSV.open(score_link, 'wb') do |csv|
+    csv << ["question", "answer", "your_answer"]
+  end
 
   CSV.foreach(link, headers: true) do |row|
     puts "#{ row['question'] }"
     print "> "
     answer_input = $stdin.gets.chomp
-    check_answer(answer_input, link, counter)
+    check_answer(answer_input, score_link, link, counter)
     counter += 1
     i += 1
   end
 
   puts "Your score: #{@score} out of #{i}"
+  score_opt(category)
 end
 
-def check_answer(answer_input, link, counter)
+def check_answer(answer_input, score_link, link, counter)
 
   answers = CSV.read(link, headers:true)
 
   if answers[counter][1] == answer_input
+
       puts "That was correct!".green
+
+      CSV.open(score_link, 'a+') do |csv_file|
+      # add a row to the csv file
+      csv_file << [answers[counter][0], answers[counter][1], answer_input]
+      end
+
       @score += 1
+
     else
       puts "Sorry, that was incorrect the answer is: #{answers[counter][1]}".red
+
+      CSV.open(score_link, 'a+') do |csv_file|
+      # add a row to the csv file
+      csv_file << [answers[counter][0], answers[counter][1], answer_input]
+      end
     end
 end
 
@@ -203,6 +209,45 @@ def new_qa(category_input_push)
   new_qa_opt
 end
 
+def score_opt(category)
+  prompt = TTY::Prompt.new
+
+  puts "\n"
+
+  selector = prompt.select("Would you like to see your score sheet?") do |menu|
+    menu.choice "Yes"
+    menu.choice "No"
+  end
+
+  case selector
+  when "Yes"
+    see_score_sheet(category)
+  when "No"
+    first_opt
+  end
+end
+
+def see_score_sheet(category)
+
+  score_link = "#{category}-score.csv"
+
+  @score = []
+
+  CSV.foreach(score_link, headers: true) do |row|
+
+    if row['answer'] == row['your_answer']
+      @score << [row['question'].green, row['answer'].green, row['your_answer'].green]
+    else
+      @score << [row['question'].red, row['answer'].red, row['your_answer'].red]
+    end
+  end
+
+  @score_sheet = Terminal::Table.new :title => category, :headings => ['Questions', 'Answers', 'Your Answers'], :rows => @score
+  @score_sheet.style = {:padding_left => 3, :border_x => "=", :border_i => "x"}
+
+  puts "\n\n#{@score_sheet}\n\n"
+  first_opt
+end
 
 ### Universal Methods ###
 
@@ -217,7 +262,7 @@ def show_categories
       end
 
       puts "\n"
-       
+
       category = prompt.select("Please pick a category from the list below:", choices)
         @category_input_push = category
 end
